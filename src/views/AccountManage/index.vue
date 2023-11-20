@@ -55,7 +55,7 @@
         <el-table-column prop="pwd" label="密码" />
         <el-table-column prop="error" label="当前状态">
           <template #default="{ row }">
-            <span>{{ row.error == 0 ? '成功' : row.error }}</span>
+            <span>{{ titleList[row.state] }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="use_time" label="活跃时间" />
@@ -71,27 +71,29 @@
 
   <!-- 账号操作对话框 -->
   <el-dialog v-model="dialogVisible" center :title="title" close-on-click-modal>
-    <component @action="action" :accountInfo="currentAccount" :titleList="titleList" />
+    <component @action="action" :accountInfo="currentAccount" :options="options" />
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
-import { getBaseInfo, getAccountInfo, addAccount, updateAccount, delAccount, downAccounts } from '../../api/accountManage'
+import { getBaseInfo, getAccountInfo, addAccount, updateAccount, delAccount } from '../../api/accountManage'
 import AddAccountModal from './AddAccountModal.vue'
 import UpdateAccountModal from './UpdateAccountModal.vue'
 import DeleteAccountModal from './DeleteAccountModal.vue'
 import { ElMessage } from 'element-plus'
+import moment from 'moment'
+import { downloadCsv } from '../../utils/downloadCsv'
 
 // 基础账号数据展示相关信息
 const titleList = {
   error: '接口正常',
   all: '账号数量',
-  state_1: '使用中',
-  state_2: '密码错误',
-  state_3: '账号封禁',
-  state_4: '需要手机验证',
-  state_5: '其他异常'
+  1: '使用中',
+  2: '密码错误',
+  3: '账号封禁',
+  4: '需要手机验证',
+  5: '其他异常'
 }
 
 // 基础数据
@@ -152,13 +154,22 @@ const formInline = reactive({
 
 // 基础数据查询
 const getBaseDate = async () => {
-  const data = await getBaseInfo()
-  cardData.value = data ? data : {}
+  const data: any = await getBaseInfo()
+  let newData: any = {}
+  Object.keys(data).forEach((item) => {
+    if (titleList[item]) {
+      newData[item] = data[item]
+    } else {
+      newData[moment(newData[item]).format('YYYY-MM-DD')] = data[item]
+    }
+  })
+  cardData.value = newData ? newData : {}
   loading.value = false
 }
 // 账号查询数据
 const getAccountDetail = async () => {
   infoLoading.value = true
+  formInline.date = formInline.date ? formInline.date.valueOf() : ''
   const data: any = await getAccountInfo(formInline)
   tableData.value = data ? data : {}
   infoLoading.value = false
@@ -187,7 +198,22 @@ const action = async (formData: any) => {
 
 // 下载功能
 const downAccount = async (state: string) => {
-  const res = await downAccounts({ state })
+  const title = titleList[state] ? titleList[state] : state
+  let rows: any[] = []
+  let head = ['账号', '创建时间', '状态', '密码', '活跃时间']
+  let data: any = await getAccountInfo({ state })
+
+  data.forEach((item: any) => {
+    // 状态
+    const state = titleList[item.state]
+    // 创建时间
+    const create_time = moment(item.create_time).format('YYYY-MM-DD HH:mm:ss')
+    // 使用时间
+    const use_time = moment(item.use_time).format('YYYY-MM-DD HH:mm:ss')
+    let row = [item.account, create_time, state, item.pwd, use_time]
+    rows.push(row)
+  })
+  downloadCsv(rows, head, `${title}汇总${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}`)
 }
 </script>
 

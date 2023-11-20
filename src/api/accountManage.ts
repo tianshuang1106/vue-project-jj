@@ -9,7 +9,7 @@ export const getBaseInfo = () => {
     })
 }
 // 账号查找
-export const getAccountInfo = (params: { account?: string, date?: string }) => {
+export const getAccountInfo = (params: { account?: string, date?: string, state?: string }) => {
     return request<AccountManage.AccountRequestData>({
         url: '/query_account',
         method: 'GET',
@@ -41,15 +41,5 @@ export const delAccount = (params: { account: string }) => {
         url: '/del_account',
         method: 'DELETE',
         data: params
-    })
-}
-
-// 下载
-export const downAccounts = (params: { state: string }) => {
-    return request<AccountManage.AccountRequestData>({
-        url: '/download_all_account',
-        method: 'GET',
-        params,
-        responseType: 'blob'
     })
 }

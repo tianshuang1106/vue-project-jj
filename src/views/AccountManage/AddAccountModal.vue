@@ -12,7 +12,13 @@
           }
         ]"
       >
-        <el-input v-model="formDate.account" placeholder="请输入账号" clearable />
+        <el-input
+          v-model="formDate.account"
+          placeholder="请输入账号"
+          oninput="if(value.length>11)value=value.slice(0,11)"
+          onkeyup="this.value = this.value.replace(/[^\d]/g,'');"
+          clearable
+        />
       </el-form-item>
 
       <el-form-item
@@ -26,7 +32,7 @@
           }
         ]"
       >
-        <el-input v-model="formDate.pwd" placeholder="设置密码" clearable />
+        <el-input v-model="formDate.pwd" placeholder="设置密码" type="password" show-password clearable />
       </el-form-item>
       <br />
       <el-form-item>
