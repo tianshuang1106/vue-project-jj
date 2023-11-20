@@ -11,7 +11,7 @@ export const getBaseInfo = () => {
 // 账号查找
 export const getAccountInfo = (params: { account?: string, date?: string, state?: string }) => {
     return request<AccountManage.AccountRequestData>({
-        url: '/query_account',
+        url: '/gm_query_account',
         method: 'GET',
         params
     })
@@ -20,7 +20,7 @@ export const getAccountInfo = (params: { account?: string, date?: string, state?
 // 新增账号
 export const addAccount = (params: { account: string, pwd: string }) => {
     return request<AccountManage.AccountRequestData>({
-        url: '/add_account',
+        url: '/gm_add_account',
         method: 'POST',
         data: params
     })
@@ -29,7 +29,7 @@ export const addAccount = (params: { account: string, pwd: string }) => {
 // 修改账号
 export const updateAccount = (params: any) => {
     return request<AccountManage.AccountRequestData>({
-        url: '/change_account',
+        url: '/gm_change_account',
         method: 'POST',
         data: params
     })
@@ -38,7 +38,7 @@ export const updateAccount = (params: any) => {
 // 删除账号
 export const delAccount = (params: { account: string }) => {
     return request<AccountManage.AccountRequestData>({
-        url: '/del_account',
+        url: '/gm_del_account',
         method: 'DELETE',
         data: params
     })
