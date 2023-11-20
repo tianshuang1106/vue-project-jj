@@ -6,8 +6,15 @@ export const constantRoutes = [
   {
     path: '/',
     component: layout,
-    redirect: '/accountManage',
+    redirect: '/baseAccount',
     children: [
+      {
+        meta: {
+          title: '基础账号查询',
+        },
+        path: '/baseAccount',
+        component: () => import('../views/BaseAccount/index.vue'),
+      },
       {
         meta: {
           title: '账号管理',
