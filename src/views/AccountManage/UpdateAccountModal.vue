@@ -29,6 +29,20 @@
         <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
     </el-form-item>
+
+    <el-form-item
+      label="密码"
+      prop="pwd"
+      :rules="[
+        {
+          required: true,
+          message: '请设置密码',
+          trigger: 'blur'
+        }
+      ]"
+    >
+      <el-input v-model="formDate.pwd" placeholder="设置密码" type="password" show-password clearable />
+    </el-form-item>
     <br />
     <el-form-item>
       <el-button size="mini" type="primary" @click="saveData(formRef)"> <i class="fa fa-check"> </i> 确认新增 </el-button>
@@ -53,7 +67,6 @@ const props = defineProps({
 })
 const formRef = ref<FormInstance>()
 const formDate = reactive(props.accountInfo)
-console.log('formDate', formDate)
 
 const saveData = (formEl: FormInstance | undefined) => {
   if (!formEl) return

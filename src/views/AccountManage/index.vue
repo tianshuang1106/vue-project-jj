@@ -49,7 +49,7 @@
         </div>
       </template>
 
-      <el-table v-loading="infoLoading" :border="true" :data="tableData" style="width: 100%">
+      <el-table v-loading="infoLoading" :border="true" :data="dataSource" style="width: 100%">
         <el-table-column fixed prop="create_time" label="创建时间" />
         <el-table-column prop="account" label="账号" />
         <el-table-column prop="pwd" label="密码" />
@@ -58,7 +58,7 @@
             <span>{{ titleList[row.state] }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="use_time" label="活跃时间" />
+        <el-table-column prop="use_date" label="活跃时间" />
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="btnClick(2, scope.row)">修改</el-button>
@@ -87,8 +87,7 @@ import { downloadCsv } from '../../utils/downloadCsv'
 
 // 基础账号数据展示相关信息
 const titleList = {
-  error: '接口正常',
-  all: '账号数量',
+  0: '空闲中',
   1: '使用中',
   2: '密码错误',
   3: '账号封禁',
@@ -99,7 +98,7 @@ const titleList = {
 // 基础数据
 let cardData: any = ref<string[]>([])
 // 表格数据
-let tableData = ref(null)
+let dataSource = ref<any>(null)
 // 基础数据loading效果
 const loading = ref(true)
 // 账号查询结果loading效果
@@ -154,24 +153,28 @@ const formInline = reactive({
 
 // 基础数据查询
 const getBaseDate = async () => {
-  const data: any = await getBaseInfo()
-  let newData: any = {}
-  Object.keys(data).forEach((item) => {
-    if (titleList[item]) {
-      newData[item] = data[item]
-    } else {
-      newData[moment(newData[item]).format('YYYY-MM-DD')] = data[item]
-    }
-  })
-  cardData.value = newData ? newData : {}
+  try {
+    const data: any = await getBaseInfo()
+    let newData: any = {}
+    Object.keys(data).forEach((item) => {
+      if (titleList[item]) {
+        newData[item] = data[item]
+      } else {
+        newData[moment(newData[item]).format('YYYY-MM-DD')] = data[item]
+      }
+    })
+    cardData.value = newData ? newData : {}
+  } catch (error) {}
   loading.value = false
 }
 // 账号查询数据
 const getAccountDetail = async () => {
   infoLoading.value = true
-  formInline.date = formInline.date ? formInline.date.valueOf() : ''
-  const data: any = await getAccountInfo(formInline)
-  tableData.value = data ? data : {}
+  try {
+    formInline.date = formInline.date ? formInline.date.valueOf() : ''
+    const { tableData, total }: any = await getAccountInfo(formInline)
+    dataSource.value = total > 0 ? tableData : []
+  } catch (error) {}
   infoLoading.value = false
 }
 onMounted(() => {
@@ -198,10 +201,13 @@ const action = async (formData: any) => {
 
 // 下载功能
 const downAccount = async (state: string) => {
+  const params: any = {
+    state: titleList[state] ? state : new Date(state).valueOf()
+  }
+  let data: any = await getAccountInfo(params)
   const title = titleList[state] ? titleList[state] : state
   let rows: any[] = []
   let head = ['账号', '创建时间', '状态', '密码', '活跃时间']
-  let data: any = await getAccountInfo({ state })
 
   data.forEach((item: any) => {
     // 状态
