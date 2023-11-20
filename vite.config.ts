@@ -28,7 +28,8 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'https://www.fastmock.site/mock/a968dd00d0f7becf9875ba21eb83fe1a/vue-project-jj',
+        target: 'http://war3.zhisc.com:9877',
+        // target: 'https://www.fastmock.site/mock/a968dd00d0f7becf9875ba21eb83fe1a/vue-project-jj',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       },

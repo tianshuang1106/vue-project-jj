@@ -11,7 +11,7 @@
       <el-row v-loading="loading">
         <el-col class="statistic-box" :span="6" v-for="(item, index) in Object.keys(cardData)" :key="index">
           <el-card class="box-card" style="margin-bottom: 20px">
-            <el-descriptions :title="titleList[item] ? titleList[item] : `${item}添加的数量`">
+            <el-descriptions :title="baseAccountTitleList[item] ? baseAccountTitleList[item] : `${item}添加的数量`">
               <el-descriptions-item>{{ cardData[item] }}</el-descriptions-item>
               <el-descriptions-item><el-button size="small" @click="downAccount(item)">下载到本地</el-button></el-descriptions-item>
             </el-descriptions>
@@ -50,7 +50,7 @@
       </template>
 
       <el-table v-loading="infoLoading" :border="true" :data="dataSource" style="width: 100%">
-        <el-table-column fixed prop="create_time" label="创建时间" />
+        <el-table-column fixed prop="create_date" label="创建时间" />
         <el-table-column prop="account" label="账号" />
         <el-table-column prop="pwd" label="密码" />
         <el-table-column prop="error" label="当前状态">
@@ -70,8 +70,8 @@
   </el-scrollbar>
 
   <!-- 账号操作对话框 -->
-  <el-dialog v-model="dialogVisible" center :title="title" close-on-click-modal>
-    <component @action="action" :accountInfo="currentAccount" :options="options" />
+  <el-dialog v-model="dialogVisible" center :title="title" @close="dialogClose" close-on-click-modal>
+    <component ref="dialogMethods" @action="action" :accountInfo="currentAccount" :options="options" />
   </el-dialog>
 </template>
 
@@ -83,9 +83,10 @@ import UpdateAccountModal from './UpdateAccountModal.vue'
 import DeleteAccountModal from './DeleteAccountModal.vue'
 import { ElMessage } from 'element-plus'
 import moment from 'moment'
+import { cloneDeep } from 'lodash'
 import { downloadCsv } from '../../utils/downloadCsv'
 
-// 基础账号数据展示相关信息
+// 账号状态展示相关信息
 const titleList = {
   0: '空闲中',
   1: '使用中',
@@ -95,6 +96,12 @@ const titleList = {
   5: '其他异常'
 }
 
+// 基础账号数据展示相关信息
+const baseAccountTitleList = {
+  ...titleList,
+  all: '所有数据'
+}
+
 // 基础数据
 let cardData: any = ref<string[]>([])
 // 表格数据
@@ -102,7 +109,7 @@ let dataSource = ref<any>(null)
 // 基础数据loading效果
 const loading = ref(true)
 // 账号查询结果loading效果
-const infoLoading = ref(true)
+const infoLoading = ref(false)
 // 对话框操作类型
 const operateType = ref<number>(1)
 // 对话框展示隐藏状态
@@ -145,7 +152,7 @@ let component = ref<any>(match('component', operateType.value))
 let currentAccount = ref<any | null>(null)
 
 // 搜索表单项
-const formInline = reactive({
+const formInline: any = reactive({
   account: '',
   date: '',
   state: ''
@@ -157,7 +164,7 @@ const getBaseDate = async () => {
     const data: any = await getBaseInfo()
     let newData: any = {}
     Object.keys(data).forEach((item) => {
-      if (titleList[item]) {
+      if (baseAccountTitleList[item]) {
         newData[item] = data[item]
       } else {
         newData[moment(newData[item]).format('YYYY-MM-DD')] = data[item]
@@ -167,12 +174,14 @@ const getBaseDate = async () => {
   } catch (error) {}
   loading.value = false
 }
+
 // 账号查询数据
 const getAccountDetail = async () => {
   infoLoading.value = true
+  const params = cloneDeep(formInline)
   try {
-    formInline.date = formInline.date ? formInline.date.valueOf() : ''
-    const { tableData, total }: any = await getAccountInfo(formInline)
+    params.date = params.date ? params.date.valueOf() / 1000 : ''
+    const { tableData, total }: any = await getAccountInfo(params)
     dataSource.value = total > 0 ? tableData : []
   } catch (error) {}
   infoLoading.value = false
@@ -181,6 +190,7 @@ onMounted(() => {
   getBaseDate()
   getAccountDetail()
 })
+
 // 增改改btn
 const btnClick = (type: number, row?: any) => {
   title.value = match('title', type)
@@ -196,30 +206,33 @@ const action = async (formData: any) => {
   ElMessage.success(`${title.value}成功`)
   dialogVisible.value = false
   getAccountDetail()
-  getBaseDate()
 }
 
 // 下载功能
 const downAccount = async (state: string) => {
   const params: any = {
-    state: titleList[state] ? state : new Date(state).valueOf()
+    state: baseAccountTitleList[state] ? state : new Date(state).valueOf() / 1000
   }
-  let data: any = await getAccountInfo(params)
-  const title = titleList[state] ? titleList[state] : state
+  const { tableData = [], total }: any = await getAccountInfo(params)
+  const title = baseAccountTitleList[state] ? baseAccountTitleList[state] : state
   let rows: any[] = []
-  let head = ['账号', '创建时间', '状态', '密码', '活跃时间']
+  let head = ['账号', '创建时间', '状态', '密码']
 
-  data.forEach((item: any) => {
-    // 状态
-    const state = titleList[item.state]
-    // 创建时间
-    const create_time = moment(item.create_time).format('YYYY-MM-DD HH:mm:ss')
-    // 使用时间
-    const use_time = moment(item.use_time).format('YYYY-MM-DD HH:mm:ss')
-    let row = [item.account, create_time, state, item.pwd, use_time]
-    rows.push(row)
-  })
+  if (total > 0) {
+    tableData.forEach((item: any) => {
+      // 状态
+      const state = baseAccountTitleList[item.state]
+      let row = [item.account, item.create_date, state, item.pwd]
+      rows.push(row)
+    })
+  }
   downloadCsv(rows, head, `${title}汇总${moment(new Date()).format('YYYY-MM-DD HH:mm:ss')}`)
+}
+
+const dialogMethods: any = ref(null)
+// 关闭对话框
+const dialogClose = () => {
+  dialogMethods.value.clearForm && dialogMethods.value.clearForm()
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <div v-loading="loading" class="wrapper">
-    <el-form ref="formRef" :model="formDate" label-width="120px" class="demo-dynamic">
+    <el-form ref="formRef" :model="formData" label-width="120px" class="demo-dynamic">
       <el-form-item
         label="账号"
         prop="account"
@@ -12,13 +12,7 @@
           }
         ]"
       >
-        <el-input
-          v-model="formDate.account"
-          placeholder="请输入账号"
-          oninput="if(value.length>11)value=value.slice(0,11)"
-          onkeyup="this.value = this.value.replace(/[^\d]/g,'');"
-          clearable
-        />
+        <el-input v-model="formData.account" placeholder="请输入账号" oninput="if(value.length>11)value=value.slice(0,11)" onkeyup="this.value = this.value.replace(/[^\d]/g,'');" clearable />
       </el-form-item>
 
       <el-form-item
@@ -32,7 +26,7 @@
           }
         ]"
       >
-        <el-input v-model="formDate.pwd" placeholder="设置密码" type="password" show-password clearable />
+        <el-input v-model="formData.pwd" placeholder="设置密码" clearable />
       </el-form-item>
       <br />
       <el-form-item>
@@ -50,7 +44,7 @@ const emit = defineEmits(['action'])
 
 const formRef = ref<FormInstance>()
 const loading = ref(false)
-const formDate = reactive({
+let formData: any = reactive({
   account: '',
   pwd: ''
 })
@@ -61,13 +55,20 @@ const saveData = (formEl: FormInstance | undefined) => {
   formEl.validate((valid) => {
     loading.value = false
     if (valid) {
-      emit('action', formDate)
+      emit('action', formData)
     } else {
       console.log('error submit!')
       return false
     }
   })
 }
+
+const clearForm = () => {
+  formRef.value?.resetFields()
+}
+defineExpose({
+  clearForm
+})
 </script>
 
 <style scoped></style>

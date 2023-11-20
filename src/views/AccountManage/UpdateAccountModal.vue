@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="formRef" :model="formDate" label-width="120px" class="demo-dynamic">
+  <el-form ref="formRef" :model="formData" label-width="120px" class="demo-dynamic">
     <el-form-item
       label="账号"
       prop="account"
@@ -11,7 +11,7 @@
         }
       ]"
     >
-      <el-input v-model="formDate.account" disabled placeholder="请输入账号" clearable />
+      <el-input v-model="formData.account" disabled placeholder="请输入账号" clearable />
     </el-form-item>
 
     <el-form-item
@@ -25,7 +25,7 @@
         }
       ]"
     >
-      <el-select v-model="formDate.state" placeholder="请选择状态" clearable>
+      <el-select v-model="formData.state" placeholder="请选择状态" clearable>
         <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
     </el-form-item>
@@ -41,11 +41,11 @@
         }
       ]"
     >
-      <el-input v-model="formDate.pwd" placeholder="设置密码" type="password" show-password clearable />
+      <el-input v-model="formData.pwd" placeholder="设置密码" learable />
     </el-form-item>
     <br />
     <el-form-item>
-      <el-button size="mini" type="primary" @click="saveData(formRef)"> <i class="fa fa-check"> </i> 确认新增 </el-button>
+      <el-button size="mini" type="primary" @click="saveData(formRef)"> <i class="fa fa-check"> </i> 确认修改 </el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -66,19 +66,26 @@ const props = defineProps({
   }
 })
 const formRef = ref<FormInstance>()
-const formDate = reactive(props.accountInfo)
+let formData: any = reactive(props.accountInfo)
 
 const saveData = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
-      emit('action', formDate)
+      emit('action', formData)
     } else {
       console.log('error submit!')
       return false
     }
   })
 }
+
+const clearForm = () => {
+  formRef.value?.resetFields()
+}
+defineExpose({
+  clearForm
+})
 </script>
 
 <style scoped></style>
