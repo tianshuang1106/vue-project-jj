@@ -53,7 +53,7 @@
   </el-scrollbar>
 
   <!-- 对话框 -->
-  <el-dialog v-model="dialogVisible" center :title="title" :destroy-on-close="true" close-on-click-modal :before-close="() => {}">
+  <el-dialog v-model="dialogVisible" center :title="title" :destroy-on-close="true" close-on-click-modal>
     <component @action="action" :currentHost="currentHost" />
   </el-dialog>
 </template>
