@@ -1,21 +1,23 @@
 <template>
-  <template v-if="theOnlyOneChild">
-    <template v-if="!theOnlyOneChild?.meta?.title">
-      <el-menu-item v-for="(item, index) in theOnlyOneChild.children" :index="item.path" :key="item.path" :is-first-level="false">
-        <span>{{ item?.meta?.title }}</span>
-      </el-menu-item>
+  <div>
+    <template v-if="theOnlyOneChild">
+      <template v-if="!theOnlyOneChild?.meta?.title">
+        <el-menu-item v-for="(item, index) in theOnlyOneChild.children" :index="item.path" :key="item.path" :is-first-level="false">
+          <span>{{ item?.meta?.title }}</span>
+        </el-menu-item>
+      </template>
+      <template v-else>
+        <el-sub-menu :index="theOnlyOneChild.path">
+          <template #title>
+            <span v-if="theOnlyOneChild.meta && theOnlyOneChild.meta.title">{{ theOnlyOneChild?.meta?.title }}</span>
+          </template>
+          <template v-if="theOnlyOneChild.children">
+            <el-menu-item v-for="child in theOnlyOneChild.children" :key="child.path" :index="child.path">{{ child?.meta?.title }}</el-menu-item>
+          </template>
+        </el-sub-menu>
+      </template>
     </template>
-    <template v-else>
-      <el-sub-menu :index="theOnlyOneChild.path">
-        <template #title>
-          <span v-if="theOnlyOneChild.meta && theOnlyOneChild.meta.title">{{ theOnlyOneChild?.meta?.title }}</span>
-        </template>
-        <template v-if="theOnlyOneChild.children">
-          <el-menu-item v-for="child in theOnlyOneChild.children" :key="child.path" :index="child.path">{{ child?.meta?.title }}</el-menu-item>
-        </template>
-      </el-sub-menu>
-    </template>
-  </template>
+  </div>
 </template>
 
 <script setup lang="ts">

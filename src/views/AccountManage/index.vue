@@ -4,7 +4,7 @@
     <el-card class="box-card">
       <template #header>
         <div class="card-form">
-          <Row>
+          <el-row>
             <el-form :inline="true" :model="formInline" class="demo-form-inline">
               <el-form-item label="账号">
                 <el-input v-model="formInline.account" placeholder="请输入要查询的账号" clearable />
@@ -20,12 +20,12 @@
                 </el-select>
               </el-form-item>
             </el-form>
-          </Row>
+          </el-row>
 
-          <Row>
+          <el-row>
             <el-button type="primary" @click="getAccountDetail">查找</el-button>
             <el-button type="primary" @click="btnClick(1)">添加</el-button>
-          </Row>
+          </el-row>
         </div>
       </template>
 
@@ -50,13 +50,13 @@
   </el-scrollbar>
 
   <!-- 账号操作对话框 -->
-  <el-dialog v-model="dialogVisible" center :title="title" @close="dialogClose" close-on-click-modal>
-    <component ref="dialogMethods" @action="action" :accountInfo="currentAccount" :options="options" />
+  <el-dialog v-model="dialogVisible" center :title="title" :destroy-on-close="true" close-on-click-modal>
+    <component @action="action" :accountInfo="currentAccount" :options="options" />
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, markRaw } from 'vue'
 import { getAccountInfo, addAccount, updateAccount, delAccount } from '../../api/accountManage'
 import AddAccountModal from './AddAccountModal.vue'
 import UpdateAccountModal from './UpdateAccountModal.vue'
@@ -74,11 +74,33 @@ const titleList = {
   5: '其他异常'
 }
 
-// 基础账号数据展示相关信息
-const baseAccountTitleList = {
-  ...titleList,
-  all: '所有数据'
+// 匹配方法
+const match = (matchKey: any, operateType: number) => {
+  let a: any = dialogTitleList.find((item) => item['operateType'] == operateType)
+  return a[matchKey]
 }
+
+// 对话框相关信息的列表
+const dialogTitleList = [
+  {
+    operateType: 1,
+    title: '新增账号',
+    component: markRaw(AddAccountModal),
+    method: addAccount
+  },
+  {
+    operateType: 2,
+    title: '修改账号',
+    component: markRaw(UpdateAccountModal),
+    method: updateAccount
+  },
+  {
+    operateType: 3,
+    title: '删除账号',
+    component: markRaw(DeleteAccountModal),
+    method: delAccount
+  }
+]
 // 表格数据
 let dataSource = ref<any>(null)
 // 账号查询结果loading效果
@@ -86,43 +108,17 @@ const infoLoading = ref(false)
 // 对话框操作类型
 const operateType = ref<number>(1)
 // 对话框展示隐藏状态
-const dialogVisible = ref(false)
-// 对话框相关信息的列表
-const dialogTitleList = [
-  {
-    operateType: 1,
-    title: '新增账号',
-    component: AddAccountModal,
-    method: addAccount
-  },
-  {
-    operateType: 2,
-    title: '修改账号',
-    component: UpdateAccountModal,
-    method: updateAccount
-  },
-  {
-    operateType: 3,
-    title: '删除账号',
-    component: DeleteAccountModal,
-    method: delAccount
-  }
-]
-// 下拉选项
-const options = Object.keys(titleList).map((item) => {
-  return { value: item, label: titleList[item] }
-})
-// 匹配方法
-const match = (matchKey: any, operateType: number) => {
-  let a: any = dialogTitleList.find((item) => item['operateType'] == operateType)
-  return a[matchKey]
-}
+const dialogVisible = ref<boolean>(false)
 // 对话框标题
 let title = ref<string>(match('title', operateType.value))
 // 要操作的组件
 let component = ref<any>(match('component', operateType.value))
 // 选中的当前账户信息
 let currentAccount = ref<any | null>(null)
+// 下拉选项
+const options = Object.keys(titleList).map((item) => {
+  return { value: item, label: titleList[item] }
+})
 
 // 搜索表单项
 const formInline: any = reactive({
@@ -162,16 +158,9 @@ const action = async (formData: any) => {
   dialogVisible.value = false
   getAccountDetail()
 }
-
-const dialogMethods: any = ref(null)
-// 关闭对话框
-const dialogClose = () => {
-  dialogMethods.value.clearForm && dialogMethods.value.clearForm()
-}
 </script>
 
 <style scoped>
-
 .demo-form-inline .el-input {
   --el-input-width: 220px;
 }

@@ -50,16 +50,15 @@ const getBaseDate = async () => {
 
     const dataSource = data.map((dataItem) => {
       let newData: any = {}
-      Object.keys(dataItem).forEach((item) => {
+      Object.keys(dataItem).forEach((item: any) => {
         if (baseAccountTitleList[item]) {
           newData[item] = dataItem[item]
         } else {
-          newData[moment(newData[item]).format('YYYY-MM-DD')] = dataItem[item]
+          newData[moment(item * 1000).format('YYYY-MM-DD')] = dataItem[item]
         }
       })
       return newData
     })
-    console.log('dataSource', dataSource)
     cardData.value = dataSource
   } catch (error) {}
   loading.value = false

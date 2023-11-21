@@ -45,7 +45,7 @@
     </el-form-item>
     <br />
     <el-form-item>
-      <el-button size="mini" type="primary" @click="saveData(formRef)"> <i class="fa fa-check"> </i> 确认修改 </el-button>
+      <el-button size="small" type="primary" @click="saveData(formRef)"> <i class="fa fa-check"> </i> 确认修改 </el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -80,12 +80,6 @@ const saveData = (formEl: FormInstance | undefined) => {
   })
 }
 
-const clearForm = () => {
-  formRef.value?.resetFields()
-}
-defineExpose({
-  clearForm
-})
 </script>
 
 <style scoped></style>

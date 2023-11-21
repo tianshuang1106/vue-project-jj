@@ -3,7 +3,7 @@
     <el-card class="transfer"> 确认删除账号为{{ accountInfo.account }}的信息？ </el-card>
     <br />
     <el-row class="btns">
-      <el-button size="mini" type="primary" @click="saveData"> <i class="fa fa-check"> </i> 确认删除 </el-button>
+      <el-button size="small" type="primary" @click="saveData"> <i class="fa fa-check"> </i> 确认删除 </el-button>
     </el-row>
   </div>
 </template>
