@@ -16,7 +16,8 @@
           <el-card class="box-card" style="margin-bottom: 20px">
             <template #header>
               <div class="card-header">
-                <span>主机Id: {{ item.uid }}</span>
+                <span>主机ID: {{ item.uid }}</span>
+                <el-button @click="btnClick(3, item.uid)">删除</el-button>
                 <el-button @click="btnClick(2, item.uid)">修改</el-button>
               </div>
             </template>
@@ -48,24 +49,27 @@
             </div>
           </el-card>
         </el-col>
+        <el-col :span="8" :offset="6"> <el-empty v-if="isEmpty(cardData)" description="暂无数据" /></el-col>
       </el-row>
     </el-card>
   </el-scrollbar>
 
   <!-- 对话框 -->
   <el-dialog v-model="dialogVisible" center :title="title" :destroy-on-close="true" close-on-click-modal>
-    <component @action="action" :currentHost="currentHost" />
+    <component @action="action" :current="currentHost" :content="content" />
   </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, markRaw } from 'vue'
 import { Picture as IconPicture } from '@element-plus/icons-vue'
-import { getHostInfo, addHost, updateHost, getCurrentHost } from '../../api/hostManage'
+import { deleteHost, getHostInfo, addHost, updateHost, getCurrentHost } from '../../api/hostManage'
 import Description from '../../components/Description/index.vue'
 import AddHost from './AddHost.vue'
+import Confirm from '../../components/Confirm/index.vue'
 import UpdateHost from './UpdateHost.vue'
 import { ElMessage } from 'element-plus'
+import { isEmpty } from 'lodash'
 
 const labelObj = {
   img_date: '该图片的截取时间',
@@ -92,12 +96,18 @@ const dialogTitleList = [
     component: markRaw(UpdateHost),
     method: updateHost,
     otherAction: (uid: string) => getCurrentHostInfo(uid)
+  },
+  {
+    operateType: 3,
+    title: '删除主机',
+    component: markRaw(Confirm),
+    method: (formData: any) => delCurrent(formData)
   }
 ]
 // 匹配方法
 const match = (matchKey: any, operateType: number) => {
   let a: any = dialogTitleList.find((item) => item['operateType'] == operateType)
-  return a[matchKey]
+  return a[matchKey] ? a[matchKey] : ''
 }
 // 对话框操作类型
 const operateType = ref<number>(1)
@@ -109,6 +119,8 @@ let title = ref<string>(match('title', operateType.value))
 let component = ref<any>(match('component', operateType.value))
 // 选中的当前主机信息
 let currentHost = ref<object>({})
+// 要展示的信息
+let content = ref<any>('')
 
 // 基础数据loading效果
 const loading = ref(false)
@@ -136,6 +148,18 @@ const getCurrentHostInfo = async (uid: string) => {
   currentHost.value = res ? res : {}
 }
 
+// 增改改btn
+const btnClick = async (type: number, uid?: string) => {
+  title.value = match('title', type)
+  content.value = `确认${match('title', type)}${uid}相关的信息？`
+  component.value = match('component', type)
+  operateType.value = type
+  currentHost.value = { uid }
+  const otherAction = match('otherAction', type)
+  otherAction && (await otherAction(uid))
+  dialogVisible.value = true
+}
+
 // 接口请求
 const action = async (formData: any) => {
   const method = match('method', operateType.value)
@@ -145,14 +169,9 @@ const action = async (formData: any) => {
   getAllHost()
 }
 
-// 增改改btn
-const btnClick = async (type: number, uid?: string) => {
-  title.value = match('title', type)
-  component.value = match('component', type)
-  operateType.value = type
-  const otherAction = match('otherAction', type)
-  otherAction && await otherAction(uid)
-  dialogVisible.value = true
+const delCurrent = async (formData: any) => {
+  const { uid } = formData
+  await deleteHost(uid)
 }
 </script>
 

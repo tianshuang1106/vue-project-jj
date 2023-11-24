@@ -7,10 +7,13 @@ export const constantRoutes = [
     path: '/',
     component: layout,
     redirect: '/baseAccount',
+    meta: {
+      title: '账号管理',
+    },
     children: [
       {
         meta: {
-          title: '基础账号查询',
+          title: '基础账号管理',
         },
         path: '/baseAccount',
         component: () => import('../views/BaseAccount/index.vue'),

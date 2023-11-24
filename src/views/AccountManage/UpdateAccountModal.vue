@@ -25,7 +25,7 @@
         }
       ]"
     >
-      <el-select v-model="formData.state" placeholder="请选择状态" clearable>
+      <el-select v-model="formData.state" placeholder="请选择状态">
         <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
       </el-select>
     </el-form-item>
@@ -41,7 +41,7 @@
         }
       ]"
     >
-      <el-input v-model="formData.pwd" placeholder="设置密码" learable />
+      <el-input v-model="formData.pwd" placeholder="设置密码" />
     </el-form-item>
     <br />
     <el-form-item>
@@ -56,7 +56,7 @@ import type { FormInstance } from 'element-plus'
 // 使用defineEmits注册一个自定义事件
 const emit = defineEmits(['action'])
 const props = defineProps({
-  accountInfo: {
+  current: {
     type: Object,
     required: true
   },
@@ -66,7 +66,7 @@ const props = defineProps({
   }
 })
 const formRef = ref<FormInstance>()
-let formData: any = reactive(props.accountInfo)
+let formData: any = reactive(props.current)
 
 const saveData = (formEl: FormInstance | undefined) => {
   if (!formEl) return

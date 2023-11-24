@@ -51,7 +51,7 @@
 
   <!-- 账号操作对话框 -->
   <el-dialog v-model="dialogVisible" center :title="title" :destroy-on-close="true" close-on-click-modal>
-    <component @action="action" :accountInfo="currentAccount" :options="options" />
+    <component @action="action" :options="options" :current="currentAccount" :content="content" />
   </el-dialog>
 </template>
 
@@ -60,7 +60,7 @@ import { onMounted, reactive, ref, markRaw } from 'vue'
 import { getAccountInfo, addAccount, updateAccount, delAccount } from '../../api/accountManage'
 import AddAccountModal from './AddAccountModal.vue'
 import UpdateAccountModal from './UpdateAccountModal.vue'
-import DeleteAccountModal from './DeleteAccountModal.vue'
+import Confirm from '../../components/Confirm/index.vue'
 import { ElMessage } from 'element-plus'
 import { cloneDeep } from 'lodash'
 
@@ -77,7 +77,7 @@ const titleList = {
 // 匹配方法
 const match = (matchKey: any, operateType: number) => {
   let a: any = dialogTitleList.find((item) => item['operateType'] == operateType)
-  return a[matchKey]
+  return a[matchKey] ? a[matchKey] : ''
 }
 
 // 对话框相关信息的列表
@@ -97,8 +97,8 @@ const dialogTitleList = [
   {
     operateType: 3,
     title: '删除账号',
-    component: markRaw(DeleteAccountModal),
-    method: delAccount
+    component: markRaw(Confirm),
+    method: (formData: any) => delCurrent(formData)
   }
 ]
 // 表格数据
@@ -119,6 +119,8 @@ let currentAccount = ref<any | null>(null)
 const options = Object.keys(titleList).map((item) => {
   return { value: item, label: titleList[item] }
 })
+// 要展示的信息
+let content = ref<any>('')
 
 // 搜索表单项
 const formInline: any = reactive({
@@ -145,6 +147,7 @@ onMounted(() => {
 // 增改改btn
 const btnClick = (type: number, row?: any) => {
   title.value = match('title', type)
+  content.value = row ? `确认${match('title', type)}${row.account}相关账号的信息？` : ''
   component.value = match('component', type)
   operateType.value = type
   currentAccount.value = row ? row : null
@@ -157,6 +160,11 @@ const action = async (formData: any) => {
   ElMessage.success(`${title.value}成功`)
   dialogVisible.value = false
   getAccountDetail()
+}
+
+const delCurrent = async (formData: any) => {
+  const { account } = formData
+  await delAccount(account)
 }
 </script>
 

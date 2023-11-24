@@ -97,7 +97,7 @@ import type { FormInstance } from 'element-plus'
 // 使用defineEmits注册一个自定义事件
 const emit = defineEmits(['action'])
 const props = defineProps({
-  currentHost: {
+  current: {
     type: Object,
     required: true
   }
@@ -106,7 +106,7 @@ const props = defineProps({
 // 基础数据loading效果
 const formRef = ref<FormInstance>()
 let formData: any = reactive({
-  ...props.currentHost
+  ...props.current
 })
 
 // 保存数据
@@ -114,6 +114,7 @@ const saveData = (formEl: FormInstance | undefined) => {
   if (!formEl) return
   formEl.validate((valid) => {
     if (valid) {
+      delete formData.img
       emit('action', formData)
     } else {
       console.log('error submit!')

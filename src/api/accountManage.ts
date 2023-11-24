@@ -43,3 +43,21 @@ export const delAccount = (params: { account: string }) => {
         data: params
     })
 }
+
+// 批量删除账号
+export const batchDelAccount = (params: { account?: string, date?: string, state?: string }) => {
+    return request<RequestData>({
+        url: '/gm_batch_delete_account',
+        method: 'GET',
+        params
+    })
+}
+
+// 批量重置账号
+export const batchResetAccount = (params: { account?: string, date?: string, state?: string }) => {
+    return request<RequestData>({
+        url: '/gm_batch_reset_account',
+        method: 'GET',
+        params
+    })
+}

@@ -34,3 +34,12 @@ export const updateHost = (params: any) => {
         data: params
     })
 }
+
+// 删除主机
+export const deleteHost = (params: { uid: string }) => {
+    return request<RequestData>({
+        url: '/gm_delete_host',
+        method: 'DELETE',
+        data: params
+    })
+}
